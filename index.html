@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Markdown Converter</title>
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" class="logo" aria-hidden="true"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 15V9l3 3 3-3v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><path d="M16 9v4m0 0 2-2m-2 2-2-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Markdown Converter</span>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab is-active" role="tab" data-tab="to-md" aria-selected="true">Anything &rarr; Markdown</button>
+    <button class="tab" role="tab" data-tab="from-md" aria-selected="false">Markdown &rarr; DOCX / PDF</button>
+  </nav>
+  <button class="icon-btn" id="themeToggle" title="Toggle light / dark" aria-label="Toggle theme">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z" fill="currentColor"/></svg>
+  </button>
+</header>
+
+<main>
+  <!-- ============================ TO MARKDOWN ============================ -->
+  <section class="panel is-active" id="panel-to-md" role="tabpanel">
+    <div class="workspace">
+      <div class="col col-left">
+
+        <div class="dropzone" id="dropIn" tabindex="0" role="button"
+             aria-label="Drop files to convert to Markdown, or click to browse">
+          <svg viewBox="0 0 24 24" class="dz-icon" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <p class="dz-title">Drop files here</p>
+          <p class="dz-sub">or click to browse</p>
+          <p class="dz-formats">PDF &middot; DOCX &middot; XLSX &middot; PPTX &middot; CSV &middot; HTML &middot; EPUB &middot; JSON &middot; TXT</p>
+          <input type="file" id="fileIn" multiple hidden
+                 accept=".pdf,.docx,.xlsx,.xls,.xlsm,.pptx,.csv,.tsv,.html,.htm,.epub,.json,.txt,.md,.markdown,.xml,.log">
+        </div>
+
+        <details class="options" open>
+          <summary>Options</summary>
+          <label class="opt"><input type="checkbox" id="optEmbedImages" checked>
+            <span>Embed images as data URIs<em>Keeps the .md self-contained. Uncheck to drop images.</em></span></label>
+          <label class="opt"><input type="checkbox" id="optPageBreaks" checked>
+            <span>Mark PDF page breaks<em>Inserts a <code>---</code> rule between pages.</em></span></label>
+          <label class="opt"><input type="checkbox" id="optDetectTables" checked>
+            <span>Detect tables in PDFs<em>Experimental column clustering. Turn off if it misfires.</em></span></label>
+          <label class="opt"><input type="checkbox" id="optDetectHeadings" checked>
+            <span>Infer headings<em>Many documents style headings as bold body text rather than real
+              headings. Turn off to keep only headings the file declares.</em></span></label>
+          <label class="opt"><input type="checkbox" id="optSheetPerHeading" checked>
+            <span>One heading per sheet / slide<em>Names each spreadsheet tab or slide as an <code>##</code> heading.</em></span></label>
+        </details>
+
+        <div class="queue" id="queueIn" hidden>
+          <div class="queue-head">
+            <h2>Files</h2>
+            <div class="queue-actions">
+              <button class="btn btn-ghost" id="clearIn">Clear</button>
+              <button class="btn btn-primary" id="zipIn" disabled>Download all (.zip)</button>
+            </div>
+          </div>
+          <ul class="filelist" id="listIn"></ul>
+        </div>
+      </div>
+
+      <div class="col col-right">
+        <div class="preview-head">
+          <h2>Preview</h2>
+          <div class="seg" role="group" aria-label="Preview mode">
+            <button class="seg-btn is-active" data-view="rendered">Rendered</button>
+            <button class="seg-btn" data-view="source">Markdown</button>
+          </div>
+        </div>
+        <div class="preview" id="previewIn">
+          <p class="empty">Convert a file to see its Markdown here.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== FROM MARKDOWN =========================== -->
+  <section class="panel" id="panel-from-md" role="tabpanel">
+    <div class="workspace">
+      <div class="col col-left">
+
+        <div class="dropzone dropzone-sm" id="dropOut" tabindex="0" role="button"
+             aria-label="Drop Markdown files, or click to browse">
+          <svg viewBox="0 0 24 24" class="dz-icon" aria-hidden="true"><path d="M12 4v12m0 0 4-4m-4 4-4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <p class="dz-title">Drop <code>.md</code> files</p>
+          <p class="dz-sub">or click to browse &mdash; or just type below</p>
+          <input type="file" id="fileOut" multiple hidden accept=".md,.markdown,.txt">
+        </div>
+
+        <label class="field">
+          <span class="field-label">Document title <em>used for the file name and PDF header</em></span>
+          <input type="text" id="docTitle" class="input" placeholder="Untitled document">
+        </label>
+
+        <label class="field field-grow">
+          <span class="field-label">Markdown</span>
+          <textarea id="mdSource" class="input mono" spellcheck="false"
+                    placeholder="# Heading&#10;&#10;Write or paste Markdown here."></textarea>
+        </label>
+
+        <details class="options">
+          <summary>Page setup</summary>
+          <label class="opt opt-row"><span>Paper</span>
+            <select id="optPaper" class="input input-sm">
+              <option value="a4" selected>A4</option>
+              <option value="letter">US Letter</option>
+            </select></label>
+          <label class="opt opt-row"><span>Margin</span>
+            <select id="optMargin" class="input input-sm">
+              <option value="0.75">Narrow (0.75in)</option>
+              <option value="1" selected>Normal (1in)</option>
+              <option value="1.25">Wide (1.25in)</option>
+            </select></label>
+          <label class="opt opt-row"><span>Body font</span>
+            <select id="optFont" class="input input-sm">
+              <option value="Calibri" selected>Calibri</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Arial">Arial</option>
+            </select></label>
+          <label class="opt"><input type="checkbox" id="optPageNums" checked>
+            <span>Page numbers in the .docx footer<em>For PDF, use “Headers and footers” in the print dialog.</em></span></label>
+        </details>
+
+        <div class="export-bar">
+          <button class="btn btn-primary" id="btnDocx">Download .docx</button>
+          <button class="btn btn-primary" id="btnPdf">Save as PDF</button>
+          <button class="btn btn-ghost" id="btnHtml">Download .html</button>
+        </div>
+        <p class="hint" id="pdfHint">“Save as PDF” opens your browser’s print dialog &mdash; choose
+          <strong>Save as PDF</strong> as the destination.</p>
+      </div>
+
+      <div class="col col-right">
+        <div class="preview-head"><h2>Preview</h2></div>
+        <div class="preview preview-paper" id="previewOut">
+          <p class="empty">Your document will render here as you type.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<iframe id="printFrame" class="print-frame" title="Print preview"></iframe>
+
+<!-- vendor -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/turndown/7.1.2/turndown.min.js"></script>
+<!-- cdnjs does not host turndown-plugin-gfm; without it tables are silently lost. -->
+<script src="https://cdn.jsdelivr.net/npm/turndown-plugin-gfm@1.0.2/dist/turndown-plugin-gfm.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.7.2/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+
+<!-- app -->
+<script src="src/to-md.js"></script>
+<script src="src/from-md.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
